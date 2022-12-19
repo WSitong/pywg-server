@@ -58,9 +58,10 @@ async def create_wg_server():
 
 async def create_peer_async(public_key: str, address: str):
     try:
-        conf = get_installed_conf()
         ip = IP(address)
-        peer = Peer(public_key.encode(), allowed_ips=[f'{ip}/32', conf.vpn.subnet])
+        # conf = get_installed_conf()
+        # peer = Peer(public_key.encode(), allowed_ips=[f'{ip}/32', conf.vpn.subnet])
+        peer = Peer(public_key.encode(), allowed_ips=[f'0.0.0.0/0'])
         wg_server = await create_wg_server()
         wg_server.upsert_peer(peer)
         p = await create_subprocess_exec('ip', '-4', 'address', 'add', f'{ip}/32', 'dev', 'wg-proxy',

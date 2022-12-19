@@ -37,6 +37,10 @@ async def main():
         conf.vpn.public_key = await generate_public_key_async(conf.vpn.private_key)
     assert await generate_public_key_async(conf.vpn.private_key) == conf.vpn.public_key
 
+    # 写入sysctl.conf
+    with open('/etc/sysctl.conf', 'w') as save_file:
+        save_file.write(f'net.ipv4.ip_forward = 1\n')
+
     # 写入nginx.conf
     domain = conf.website.domain
     sub_domain = conf.website.sub_domain
