@@ -69,6 +69,8 @@ async def get_devices(skip: int = 0, limit: int = 100, db: Session = Depends(get
 @router.post('/devices', response_model=schemas.Device)
 async def create_devices(device_base: schemas.DeviceBase, db: Session = Depends(get_db)):
     private_key, public_key = '', ''
+    subnet = IP(conf.vpn.subnet)
+
     try:
         address = IP(device_base.address)
     except ValueError:
@@ -85,7 +87,6 @@ async def create_devices(device_base: schemas.DeviceBase, db: Session = Depends(
     if device_base.type == schemas.DeviceType.VPN:
         server_address = IP(conf.vpn.address)
         dns_address = IP(conf.vpn.dns)
-        subnet = IP(conf.vpn.subnet)
         if address == server_address:
             raise HTTPException(status_code=400, detail="不能与服务器地址相同")
         if address == dns_address:
@@ -97,6 +98,9 @@ async def create_devices(device_base: schemas.DeviceBase, db: Session = Depends(
             await create_peer_async(public_key, device_base.address)
         except WGError as error:
             raise HTTPException(status_code=400, detail=str(error))
+    else:
+        if address in subnet:
+            raise HTTPException(status_code=400, detail=f"普通设备的地址不能属于VPN网段")
 
     device_create = schemas.DeviceCreate(
         private_key=private_key,
