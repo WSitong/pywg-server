@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sql.database import get_db
 from install import get_installed_conf
 from IPy import IP
-from utils import generate_keys_async, create_peer_async, WGError, save_vpn_files
+from utils import generate_keys_async, create_peer_async, WGError, save_vpn_files, delete_vpn_files
 
 conf = get_installed_conf()
 
@@ -121,3 +121,5 @@ async def delete_devices(device_id: int, db: Session = Depends(get_db)):
     if len(proxies) > 0:
         raise HTTPException(status_code=400, detail="设备在使用中")
     crud.delete_device(db, device_id)
+    if device.type == schemas.DeviceType.VPN:
+        await delete_vpn_files(device)
