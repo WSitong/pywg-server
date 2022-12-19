@@ -1,10 +1,13 @@
+import os.path
 from pywireguard.factory import Peer
 from IPy import IP
 import pywireguard.factory as wg
 import traceback
 import asyncio.subprocess
-from asyncio import create_subprocess_exec
+from asyncio import create_subprocess_exec, sleep
 from install import get_installed_conf
+from sql import models
+import qrcode
 
 __wg_server = None
 
@@ -70,3 +73,36 @@ async def create_peer_async(public_key: str, address: str):
     except Exception:
         traceback.print_exc()
         raise WGError('无法创建设备虚拟专用隧道')
+
+
+async def save_vpn_files(device: models.Device):
+    directory = 'web/vpn'
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+    directory = os.path.join(directory, str(device.id))
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+
+    website = get_installed_conf().website
+    vpn_conf = get_installed_conf().vpn
+
+    lines = [
+        f'[Interface]',
+        f'PrivateKey = {device.private_key}',
+        f'Address = {device.address}/32',
+        f'DNS = {vpn_conf.dns}',
+        f'',
+        f'[Peer]'
+        f'PublicKey = {vpn_conf.public_key}',
+        f'AllowedIPs = {vpn_conf.address}/32, {vpn_conf.subnet}'
+        f'EndPoint = {website.sub_domain}.{website.domain}:{vpn_conf.listen_port}'
+    ]
+
+    with open(os.path.join(directory, f'{device.name}.conf'), 'w') as conf_file:
+        for line in lines:
+            conf_file.write(f'{line}\n')
+            await sleep(0)
+
+    img = qrcode.make('\n'.join(lines))
+    img.save(os.path.join(directory, f'{device.name}.png'))
+

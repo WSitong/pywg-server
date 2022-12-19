@@ -1,12 +1,10 @@
-import os
-
 from fastapi import APIRouter, Depends, HTTPException
 from sql import models, schemas, crud
 from sqlalchemy.orm import Session
 from sql.database import get_db
 from install import get_installed_conf
 from IPy import IP
-from utils import generate_keys_async, create_peer_async, WGError
+from utils import generate_keys_async, create_peer_async, WGError, save_vpn_files
 
 conf = get_installed_conf()
 
@@ -97,8 +95,6 @@ async def create_devices(device_base: schemas.DeviceBase, db: Session = Depends(
         try:
             private_key, public_key = await generate_keys_async()
             await create_peer_async(public_key, device_base.address)
-            print(private_key)
-            print(public_key)
         except WGError as error:
             raise HTTPException(status_code=400, detail=str(error))
 
@@ -107,8 +103,9 @@ async def create_devices(device_base: schemas.DeviceBase, db: Session = Depends(
         public_key=public_key,
         **device_base.dict()
     )
-
-    return crud.create_device(db, device_create)
+    device_model = crud.create_device(db, device_create)
+    await save_vpn_files(device_model)
+    return device_model
 
 
 @router.delete('/devices/{device_id}', status_code=204)
