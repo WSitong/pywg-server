@@ -61,7 +61,6 @@ async def create_peer_async(public_key: str, address: str):
         conf = get_installed_conf()
         ip = IP(address)
         peer = Peer(public_key.encode(), allowed_ips=[f'{ip}/32', conf.vpn.subnet])
-        # peer = Peer(public_key.encode(), allowed_ips=['0.0.0.0/0'])
         wg_server = await create_wg_server()
         wg_server.upsert_peer(peer)
         p = await create_subprocess_exec('ip', '-4', 'address', 'add', f'{ip}/32', 'dev', 'wg-proxy',
@@ -92,10 +91,10 @@ async def save_vpn_files(device: models.Device):
         f'Address = {device.address}/32',
         f'DNS = {vpn_conf.dns}',
         f'',
-        f'[Peer]'
+        f'[Peer]',
         f'PublicKey = {vpn_conf.public_key}',
-        f'AllowedIPs = {vpn_conf.address}/32, {vpn_conf.subnet}'
-        f'EndPoint = {website.sub_domain}.{website.domain}:{vpn_conf.listen_port}'
+        f'AllowedIPs = {vpn_conf.address}/32, {vpn_conf.subnet}',
+        f'EndPoint = {website.sub_domain}.{website.domain}:{vpn_conf.listen_port}',
     ]
 
     with open(os.path.join(directory, f'{device.name}.conf'), 'w') as conf_file:
