@@ -73,11 +73,8 @@ async def main():
         # save_file.write(f'PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n')
         # save_file.write(f'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n')
 
-    # 重写和备份install.yaml到data
+    # 重写install.yaml到data
     write_conf(conf, 'install')
-    if not os.path.isdir('data'):
-        os.mkdir('data')
-    write_conf(conf, 'data')
 
     # 写入installed文件
     with open(os.path.join('install', 'installed'), 'wb') as file:
@@ -85,6 +82,14 @@ async def main():
 
     # 写入start.sh
     with open('start.sh', 'w') as save_file:
+        save_file.write(
+            'if [ -f "data/install.yaml" ];then\n' +
+            '    echo "install.yaml already exists."\n' +
+            'else\n' +
+            '    mkdir -p data\n' +
+            '    cp ./install/install.yaml ./data\n' +
+            'fi\n'
+        )
         save_file.write(f'nginx\n')
         save_file.write(f'wg-quick up {conf.vpn.name}\n')
         save_file.write(f'uvicorn main:app --host 127.0.0.1 --port 8000\n')
