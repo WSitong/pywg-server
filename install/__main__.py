@@ -37,33 +37,52 @@ async def main():
         conf.vpn.public_key = await generate_public_key_async(conf.vpn.private_key)
     assert await generate_public_key_async(conf.vpn.private_key) == conf.vpn.public_key
 
-    # 写入sysctl.conf
-    with open('/etc/sysctl.conf', 'w') as save_file:
-        save_file.write(f'net.ipv4.ip_forward = 1\n')
+    # # 写入sysctl.conf
+    # with open('/etc/sysctl.conf', 'w') as save_file:
+    #     save_file.write(f'net.ipv4.ip_forward = 1\n')
 
     # 写入nginx.conf
     domain = conf.website.domain
     sub_domain = conf.website.sub_domain
     nginx_conf_file_path = os.path.join('/etc/nginx/conf.d', f'{sub_domain}.{domain}.conf')
     with open(nginx_conf_file_path, 'w') as save_file:
-        with open(os.path.join('install', conf.website.nginx)) as conf_file:
-            content = conf_file.read()
-        content = content % (sub_domain, domain)
-        save_file.write(content)
+        save_file.write('server {\n')
+        save_file.write('  listen 80;\n')
+        save_file.write('  server_name %s.%s;\n' % (sub_domain, domain))
+        save_file.write('  location / {\n')
+        save_file.write('    root /app/web;\n')
+        save_file.write('    index index.html index.htm;\n')
+        save_file.write('  }\n')
+        save_file.write('  location /openapi.json {\n')
+        save_file.write('    proxy_pass http://127.0.0.1:8000;\n')
+        save_file.write('  }\n')
+        save_file.write('  location /docs {\n')
+        save_file.write('    proxy_pass http://127.0.0.1:8000;\n')
+        save_file.write('  }\n')
+        save_file.write('  location /api {\n')
+        save_file.write('    proxy_pass http://127.0.0.1:8000;\n')
+        save_file.write('  }\n')
+        save_file.write('}\n')
 
-    # 写入wg-proxy.conf
-    wg_conf_file_path = os.path.join('/etc/wireguard/wg-proxy.conf')
+    # 写入vpn conf
+    wg_conf_file_path = os.path.join(f'/etc/wireguard/{conf.vpn.name}.conf')
     with open(wg_conf_file_path, 'w') as save_file:
         save_file.write(f'[Interface]\n')
         save_file.write(f'Address = {conf.vpn.address}/32\n')
         save_file.write(f'ListenPort = {conf.vpn.listen_port}\n')
         save_file.write(f'PrivateKey = {conf.vpn.private_key}\n')
-        save_file.write(f'PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n')
-        save_file.write(f'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n')
+        # save_file.write(f'PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n')
+        # save_file.write(f'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n')
 
     # 写入installed文件
     with open(os.path.join('install', 'installed'), 'wb') as file:
         dump(conf, file)
+
+    # 写入start.sh
+    with open('start.sh', 'w') as save_file:
+        save_file.write(f'nginx\n')
+        save_file.write(f'wg-quick up {conf.vpn.name}\n')
+        save_file.write(f'uvicorn main:app --host 127.0.0.1 --port 8000\n')
 
 
 asyncio.run(main())
