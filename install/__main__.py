@@ -36,6 +36,7 @@ async def main():
         conf.vpn.public_key = pub_key
     if conf.vpn.public_key is None:
         conf.vpn.public_key = await generate_public_key_async(conf.vpn.private_key)
+    assert await generate_public_key_async(conf.vpn.private_key) == conf.vpn.public_key
 
     # 写入nginx.conf
     domain = conf.website.domain
