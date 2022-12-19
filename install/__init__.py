@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic import BaseModel
 import yaml
 from pickle import load, PickleError
-import shutil
 
 
 class Website(BaseModel):
