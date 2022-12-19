@@ -9,7 +9,6 @@ import shutil
 class Website(BaseModel):
     domain: str
     sub_domain: str
-    nginx: str
 
 
 class Admin(BaseModel):
@@ -23,8 +22,8 @@ class VPN(BaseModel):
     dns: str
     listen_port: int
     subnet: str
-    private_key: Optional[str]
-    public_key: Optional[str]
+    private_key: Optional[str] = None
+    public_key: Optional[str] = None
 
 
 class Config(BaseModel):
