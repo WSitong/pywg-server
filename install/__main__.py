@@ -26,7 +26,6 @@ async def main():
     address = IP(conf.vpn.address)
     dns = IP(conf.vpn.dns)
     subnet = IP(conf.vpn.subnet)
-    assert dns == address
     assert address in subnet
     assert dns in subnet
     assert 3000 < conf.vpn.listen_port < 65536
