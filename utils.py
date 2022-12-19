@@ -1,4 +1,6 @@
 import os.path
+import shutil
+
 from pywireguard.factory import Peer
 from IPy import IP
 import pywireguard.factory as wg
@@ -51,18 +53,24 @@ async def generate_public_key_async(pri_key: str) -> str:
 
 async def create_wg_server():
     global __wg_server
+    conf = get_installed_conf()
     if __wg_server is None:
-        __wg_server = wg.Interface('wg-proxy')
+        try:
+            __wg_server = wg.Interface(conf.vpn.name)
+        except Exception:
+            __wg_server = None
+            raise WGError('创建vpn接口失败')
     return __wg_server
 
 
 async def create_peer_async(public_key: str, address: str):
     try:
+        conf = get_installed_conf()
         ip = IP(address)
         peer = Peer(public_key.encode(), allowed_ips=[f'{ip}/32'])
         wg_server = await create_wg_server()
         wg_server.upsert_peer(peer)
-        p = await create_subprocess_exec('ip', '-4', 'route', 'add', f'{ip}/32', 'dev', 'wg-proxy',
+        p = await create_subprocess_exec('ip', '-4', 'route', 'add', f'{ip}/32', 'dev', conf.vpn.name,
                                          stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
         out, err = await p.communicate()
         if b'File exits' in err:
@@ -73,6 +81,15 @@ async def create_peer_async(public_key: str, address: str):
         raise WGError('无法创建设备虚拟专用隧道')
 
 
+async def delete_vpn_files(device: models.Device):
+    directory = 'web/vpn'
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+    directory = os.path.join(directory, str(device.id))
+    if os.path.isdir(directory):
+        shutil.rmtree(directory, ignore_errors=True)
+
+
 async def save_vpn_files(device: models.Device):
     directory = 'web/vpn'
     if not os.path.isdir(directory):
@@ -81,8 +98,9 @@ async def save_vpn_files(device: models.Device):
     if not os.path.isdir(directory):
         os.mkdir(directory)
 
-    website = get_installed_conf().website
-    vpn_conf = get_installed_conf().vpn
+    conf = get_installed_conf()
+    website = conf.website
+    vpn_conf = conf.vpn
 
     lines = [
         f'[Interface]',
