@@ -23,6 +23,6 @@ class Device(Base):
           2 - 公网IP
           3 - VPN IP, 此时vpn、private_key、public_key才有值
     """
-    type = Column(Integer)
+    type = Column(String)
     private_key = Column(String)
     public_key = Column(String)

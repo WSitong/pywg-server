@@ -7,9 +7,9 @@ class Protocol(str, enum.Enum):
     # HTTPS = 'https'
 
 
-class DeviceType(enum.IntEnum):
-    Normal = 0
-    VPN = 1
+class DeviceType(str, enum.Enum):
+    Normal = 'normal'
+    VPN = 'vpn'
 
 
 class DeviceBase(BaseModel):
