@@ -1,0 +1,17 @@
+website:
+  domain: wangsitong.cloud
+  sub_domain: proxy
+  nginx: website.conf
+
+admin:
+  name: admin
+  password: admin
+
+vpn:
+  name: wg-proxy
+  address: 10.10.10.1
+  dns: 10.10.10.1
+  listen_port: 51820
+  subnet: 10.10.10.0/24
+  private_key: KPwmExyp90Gp/AOCztf41pncadVzxgCImLXhJzwETUo=
+  public_key: 6En4B6hOpGBaOLjhS2TQUxMc7eJJGD8t+ktCfaY9PnU=

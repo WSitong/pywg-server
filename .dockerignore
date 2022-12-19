@@ -1,0 +1,19 @@
+# 虚拟环境目录
+venv
+venv/
+
+# PyCharm目录
+.idea
+.idea/
+
+# git目录
+.git
+.git/
+
+# 其他文件
+LICENSE
+Dockerfile
+.gitignore
+.dockerignore
+data
+data/
