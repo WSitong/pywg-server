@@ -10,7 +10,6 @@ async def main():
     conf = load_install_conf()
 
     # 检查website
-    assert os.path.isfile(os.path.join('install', conf.website.nginx))
     assert conf.website.domain != ''
     assert conf.website.sub_domain != ''
 
