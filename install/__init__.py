@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 import yaml
 from pickle import load, PickleError
+import shutil
 
 
 class Website(BaseModel):
@@ -53,3 +54,13 @@ def get_installed_conf() -> Config:
         except PickleError:
             raise IOError('installed文件已损坏，请重新运行：python -m install')
     return __conf
+
+
+def write_conf(conf: Config):
+    data = conf.dict()
+    with open('install/install.yaml', 'wb') as file:
+        yaml.dump(data, file)
+    if not os.path.isdir('data'):
+        os.mkdir('data')
+    shutil.copyfile('install/install.yaml', 'data/install.yaml')
+

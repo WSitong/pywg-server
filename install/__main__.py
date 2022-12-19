@@ -1,5 +1,5 @@
 import os.path
-from install import load_install_conf
+from install import load_install_conf, write_conf
 from utils import generate_public_key_async, generate_keys_async
 from IPy import IP
 from pickle import dump
@@ -73,6 +73,9 @@ async def main():
         save_file.write(f'PrivateKey = {conf.vpn.private_key}\n')
         # save_file.write(f'PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\n')
         # save_file.write(f'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n')
+
+    # 重写和备份install.yaml到data
+    write_conf(conf)
 
     # 写入installed文件
     with open(os.path.join('install', 'installed'), 'wb') as file:
