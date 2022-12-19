@@ -38,7 +38,7 @@ def get_devices_by_id(db: Session, ids: list[int]) -> list[models.Device]:
     return db.query(models.Device).filter(models.Device.id.in_(ids)).all()
 
 
-def get_device_by_id(db: Session, did: int) -> list[models.Device]:
+def get_device_by_id(db: Session, did: int) -> models.Device:
     return db.query(models.Device).filter(models.Device.id == did).first()
 
 
