@@ -55,11 +55,8 @@ def get_installed_conf() -> Config:
     return __conf
 
 
-def write_conf(conf: Config):
+def write_conf(conf: Config, path: str = 'install'):
     data = conf.dict()
-    with open('install/install.yaml', 'w') as file:
+    path = os.path.join(path, 'install.yaml')
+    with open(path, 'w') as file:
         yaml.dump(data, file)
-    if not os.path.isdir('data'):
-        os.mkdir('data')
-    shutil.copyfile('install/install.yaml', 'data/install.yaml')
-

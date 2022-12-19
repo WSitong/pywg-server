@@ -74,7 +74,10 @@ async def main():
         # save_file.write(f'PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE\n')
 
     # 重写和备份install.yaml到data
-    write_conf(conf)
+    write_conf(conf, 'install')
+    if not os.path.isdir('data'):
+        os.mkdir('data')
+    write_conf(conf, 'data')
 
     # 写入installed文件
     with open(os.path.join('install', 'installed'), 'wb') as file:
